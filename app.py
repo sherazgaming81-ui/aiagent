@@ -3,6 +3,7 @@ Flask Web Application for AI Lead Agent
 Fully automated lead management system with web interface
 """
 
+import os
 from flask import Flask, jsonify, request, render_template_string
 from flask_cors import CORS
 from lead_agent import AILeadAgent
