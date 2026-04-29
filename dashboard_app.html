@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Lead Agent - Automated Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        :root {
+            --primary: #6366F1;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --dark-bg: #0F172A;
+            --card-bg: #1E293B;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: #ffffff;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .lead-card {
+            background: var(--card-bg);
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .lead-card:hover {
+            transform: translateX(5px);
+        }
+
+        .lead-hot { border-left-color: #EF4444; }
+        .lead-warm { border-left-color: #F59E0B; }
+        .lead-cold { border-left-color: #3B82F6; }
+        .lead-disqualified { border-left-color: #6B7280; }
+
+        .score-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #374151;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-hot { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+        .badge-warm { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        .badge-cold { background: rgba(59, 130, 246, 0.2); color: #3B82F6; }
+        .badge-disqualified { background: rgba(107, 114, 128, 0.2); color: #6B7280; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .auto-refresh {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-[#1E293B]/90 backdrop-blur-lg border-b border-[#6366F1]/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-xl flex items-center justify-center">
+                        <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold">AI Lead Agent</span>
+                    <span class="badge bg-[#10B981]/20 text-[#10B981] auto-refresh">● Auto-Running</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="refreshData()" class="text-gray-300 hover:text-white flex items-center gap-2">
+                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        Refresh
+                    </button>
+                    <button onclick="openModal()" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Add Lead
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#6366F1]/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6 text-[#6366F1]"></i>
+                    </div>
+                    <span class="text-3xl font-bold" id="totalLeads">-</span>
+                </div>
+                <div class="text-gray-400">Total Leads</div>
+            </div>
+
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#EF4444]/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="flame" class="w-6 h-6 text-[#EF4444]"></i>
+                    </div>
+                    <span class="text-3xl font-bold text-[#EF4444]" id="hotLeads">-</span>
+                </div>
+                <div class="text-gray-400">Hot Leads</div>
+            </div>
+
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#10B981]/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="calendar-check" class="w-6 h-6 text-[#10B981]"></i>
+                    </div>
+                    <span class="text-3xl font-bold text-[#10B981]" id="bookedLeads">-</span>
+                </div>
+                <div class="text-gray-400">Booked</div>
+            </div>
+
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#F59E0B]/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-[#F59E0B]"></i>
+                    </div>
+                    <span class="text-3xl font-bold text-[#F59E0B]" id="avgScore">-</span>
+                </div>
+                <div class="text-gray-400">Avg Score</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="stat-card rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-4">Lead Distribution</h3>
+                <canvas id="leadDistributionChart"></canvas>
+            </div>
+            <div class="stat-card rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-4">Score Trends</h3>
+                <canvas id="scoreTrendsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div class="stat-card rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">📊 Automated Reports</h3>
+                <button onclick="loadReports()" class="text-[#6366F1] hover:text-[#8B5CF6] flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    Generate Report
+                </button>
+            </div>
+            <div id="reportsContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-[#374151]/50 rounded-lg p-4">
+                    <div class="text-gray-400 text-sm">Conversion Rate</div>
+                    <div class="text-2xl font-bold text-[#10B981]" id="conversionRate">-</div>
+                </div>
+                <div class="bg-[#374151]/50 rounded-lg p-4">
+                    <div class="text-gray-400 text-sm">Nurturing</div>
+                    <div class="text-2xl font-bold text-[#F59E0B]" id="nurturingCount">-</div>
+                </div>
+                <div class="bg-[#374151]/50 rounded-lg p-4">
+                    <div class="text-gray-400 text-sm">Cold Outreach</div>
+                    <div class="text-2xl font-bold text-[#3B82F6]" id="coldOutreachCount">-</div>
+                </div>
+                <div class="bg-[#374151]/50 rounded-lg p-4">
+                    <div class="text-gray-400 text-sm">Disqualified</div>
+                    <div class="text-2xl font-bold text-[#6B7280]" id="disqualifiedCount">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leads Table -->
+        <div class="stat-card rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Recent Leads</h3>
+                <div class="flex gap-2">
+                    <select id="filterStatus" onchange="filterLeads()" class="bg-[#374151] text-white px-4 py-2 rounded-lg border border-[#6366F1]/30">
+                        <option value="all">All Status</option>
+                        <option value="hot">Hot</option>
+                        <option value="warm">Warm</option>
+                        <option value="cold">Cold</option>
+                        <option value="disqualified">Disqualified</option>
+                    </select>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left text-gray-400 border-b border-[#6366F1]/20">
+                            <th class="pb-4">Lead</th>
+                            <th class="pb-4">Company</th>
+                            <th class="pb-4">Score</th>
+                            <th class="pb-4">Qualification</th>
+                            <th class="pb-4">Status</th>
+                            <th class="pb-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadsTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-gray-400">
+                                Loading leads...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Lead Modal -->
+    <div id="addLeadModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold">Add New Lead</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <form id="addLeadForm" onsubmit="addLead(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Name *</label>
+                        <input type="text" name="name" required class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Email *</label>
+                        <input type="email" name="email" required class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Company</label>
+                        <input type="text" name="company" class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Company Size</label>
+                            <select name="company_size" class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                                <option value="small">Small</option>
+                                <option value="medium">Medium</option>
+                                <option value="large">Large</option>
+                                <option value="startup">Startup</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Budget</label>
+                            <select name="budget" class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Timeline</label>
+                            <select name="timeline" class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                                <option value="later">Later</option>
+                                <option value="soon">Soon</option>
+                                <option value="immediate">Immediate</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Industry Match</label>
+                            <select name="industry_match" class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Engagement Level</label>
+                        <select name="engagement" class="w-full bg-[#374151] text-white px-4 py-3 rounded-lg border border-[#6366F1]/30 focus:border-[#6366F1] focus:outline-none">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="closeModal()" class="flex-1 bg-[#374151] text-white py-3 rounded-lg font-semibold hover:bg-[#4B5563] transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 btn-primary text-white py-3 rounded-lg font-semibold">
+                        Add Lead
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        let leads = [];
+        let charts = {};
+
+        // Load leads from API
+        async function loadLeadsFromAPI() {
+            try {
+                const response = await fetch('/api/leads');
+                const data = await response.json();
+                leads = data;
+                updateStats();
+                renderLeads();
+                updateCharts();
+            } catch (error) {
+                console.error('Error loading leads:', error);
+                document.getElementById('leadsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-gray-400">
+                            Failed to load leads. Make sure the server is running.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Load reports
+        async function loadReports() {
+            try {
+                const response = await fetch('/api/reports');
+                const data = await response.json();
+                
+                document.getElementById('conversionRate').textContent = data.summary.conversion_rate + '%';
+                document.getElementById('nurturingCount').textContent = data.status_breakdown.nurturing;
+                document.getElementById('coldOutreachCount').textContent = data.status_breakdown.cold_outreach;
+                document.getElementById('disqualifiedCount').textContent = data.status_breakdown.disqualified;
+            } catch (error) {
+                console.error('Error loading reports:', error);
+            }
+        }
+
+        // Update dashboard stats
+        function updateStats() {
+            const totalLeads = leads.length;
+            const hotLeads = leads.filter(l => l.qualification === 'hot').length;
+            const bookedLeads = leads.filter(l => l.status === 'booked').length;
+            const avgScore = leads.length > 0 ? Math.round(leads.reduce((sum, l) => sum + l.score, 0) / leads.length) : 0;
+
+            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('hotLeads').textContent = hotLeads;
+            document.getElementById('bookedLeads').textContent = bookedLeads;
+            document.getElementById('avgScore').textContent = avgScore;
+        }
+
+        // Render leads table
+        function renderLeads(filteredLeads = leads) {
+            const tbody = document.getElementById('leadsTableBody');
+            tbody.innerHTML = '';
+
+            if (filteredLeads.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-gray-400">
+                            No leads found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filteredLeads.forEach(lead => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-[#6366F1]/20';
+                
+                const badgeClass = `badge-${lead.qualification}`;
+                
+                row.innerHTML = `
+                    <td class="py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-full flex items-center justify-center">
+                                <span class="font-bold">${lead.name.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold">${lead.name}</div>
+                                <div class="text-gray-400 text-sm">${lead.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4">${lead.company || '-'}</td>
+                    <td class="py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="score-bar w-24">
+                                <div class="score-fill ${lead.score >= 70 ? 'bg-[#EF4444]' : lead.score >= 50 ? 'bg-[#F59E0B]' : 'bg-[#3B82F6]'}" style="width: ${lead.score}%"></div>
+                            </div>
+                            <span class="font-bold">${lead.score}</span>
+                        </div>
+                    </td>
+                    <td class="py-4">
+                        <span class="badge ${badgeClass}">${lead.qualification.toUpperCase()}</span>
+                    </td>
+                    <td class="py-4">
+                        <span class="text-gray-400 capitalize">${lead.status.replace('_', ' ')}</span>
+                    </td>
+                    <td class="py-4">
+                        <button onclick="viewLead(${lead.id})" class="text-[#6366F1] hover:text-[#8B5CF6] transition-colors">
+                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Filter leads
+        function filterLeads() {
+            const status = document.getElementById('filterStatus').value;
+            if (status === 'all') {
+                renderLeads(leads);
+            } else {
+                renderLeads(leads.filter(l => l.qualification === status));
+            }
+        }
+
+        // Modal functions
+        function openModal() {
+            document.getElementById('addLeadModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('addLeadModal').classList.remove('active');
+            document.getElementById('addLeadForm').reset();
+        }
+
+        // Add lead via API
+        async function addLead(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            const leadData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                company: formData.get('company'),
+                company_size: formData.get('company_size'),
+                budget: formData.get('budget'),
+                timeline: formData.get('timeline'),
+                industry_match: formData.get('industry_match'),
+                engagement: formData.get('engagement')
+            };
+
+            try {
+                const response = await fetch('/api/leads', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(leadData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    await loadLeadsFromAPI();
+                    await loadReports();
+                    closeModal();
+                    alert(`Lead added successfully!\nScore: ${result.score}\nQualification: ${result.qualification}\nAction: ${result.action_taken}`);
+                } else {
+                    alert('Error adding lead: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error adding lead:', error);
+                alert('Error adding lead. Please try again.');
+            }
+        }
+
+        // View lead details
+        function viewLead(id) {
+            const lead = leads.find(l => l.id === id);
+            if (lead) {
+                alert(`Lead Details:\n\nName: ${lead.name}\nEmail: ${lead.email}\nCompany: ${lead.company}\nScore: ${lead.score}\nQualification: ${lead.qualification}\nStatus: ${lead.status}\nCreated: ${lead.created_at}`);
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadLeadsFromAPI();
+            loadReports();
+        }
+
+        // Initialize charts
+        function updateCharts() {
+            // Destroy existing charts
+            if (charts.distribution) charts.distribution.destroy();
+            if (charts.trends) charts.trends.destroy();
+
+            // Lead Distribution Chart
+            const ctx1 = document.getElementById('leadDistributionChart').getContext('2d');
+            charts.distribution = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hot', 'Warm', 'Cold', 'Disqualified'],
+                    datasets: [{
+                        data: [
+                            leads.filter(l => l.qualification === 'hot').length,
+                            leads.filter(l => l.qualification === 'warm').length,
+                            leads.filter(l => l.qualification === 'cold').length,
+                            leads.filter(l => l.qualification === 'disqualified').length
+                        ],
+                        backgroundColor: ['#EF4444', '#F59E0B', '#3B82F6', '#6B7280'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#ffffff' }
+                        }
+                    }
+                }
+            });
+
+            // Score Trends Chart
+            const ctx2 = document.getElementById('scoreTrendsChart').getContext('2d');
+            charts.trends = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: leads.slice(0, 10).map(l => l.created_at).reverse(),
+                    datasets: [{
+                        label: 'Lead Scores',
+                        data: leads.slice(0, 10).map(l => l.score).reverse(),
+                        borderColor: '#6366F1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#ffffff' },
+                            grid: { color: 'rgba(99, 102, 241, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#ffffff' },
+                            grid: { color: 'rgba(99, 102, 241, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize
+        loadLeadsFromAPI();
+        loadReports();
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadLeadsFromAPI();
+            loadReports();
+        }, 30000);
+    </script>
+</body>
+</html>
