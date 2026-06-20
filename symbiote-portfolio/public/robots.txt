@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://symbiotesystems.vercel.app/sitemap.xml

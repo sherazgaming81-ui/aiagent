@@ -1,0 +1,825 @@
+// NavigationUI Styles - Raw Version (Placeholder Graphics)
+// Awwwards 2026 Ready - Zero UI Approach
+
+.navigation-ui {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+
+    // All interactive elements need pointer-events
+    button,
+    .map-panel,
+    .audio-panel,
+    .menu-overlay {
+        pointer-events: auto;
+    }
+}
+
+// === BUTTONS BASE STYLE === (Light Neon Theme)
+.nav-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 55px;
+    padding-top: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    overflow: visible;
+
+    // Light glass with neon border
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        border: 2.5px solid #3B82F6;
+        backdrop-filter: blur(8px);
+        z-index: -1;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    &::after {
+        display: none;
+    }
+
+    box-shadow: 0 2px 10px rgba(56, 189, 248, 0.1);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.25);
+
+        &::before {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+
+    svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: #7C3AED;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        z-index: 1;
+    }
+}
+
+// === BACK BUTTON ===
+.back-btn {
+    position: fixed;
+    top: 0; // Starts from top edge
+    left: 24px;
+    animation: fadeSlideDown 0.3s ease-out;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+
+    // Slide up when exiting
+    &.exiting {
+        transform: translateY(-100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    @keyframes fadeSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+// === RIGHT SIDE CONTROLS ===
+.nav-controls {
+    position: fixed;
+    top: 0; // Starts from top edge
+    right: 24px;
+    display: flex;
+    gap: 12px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    animation: slideDownEntrance 0.4s ease-out;
+
+    @keyframes slideDownEntrance {
+        from {
+            opacity: 0;
+            transform: translateY(-100%);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    // Slide up when menu is open
+    &.menu-open {
+        transform: translateY(-100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    // Slide up gracefully when inspecting an item
+    &.ui-hidden {
+        transform: translateY(-120%);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+
+}
+
+// === HAMBURGER BUTTON ===
+.hamburger-btn {
+    .hamburger-icon {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        width: 20px;
+
+        span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(135deg, #38BDF8, #A78BFA);
+            border-radius: 2px;
+        }
+    }
+}
+
+// === MAP PANEL ===
+.map-panel {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    width: 90%;
+    max-width: 500px;
+    border: none;
+    border-radius: 0;
+    filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.15));
+
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.3s ease;
+
+    &.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .map-content-clipped {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+        padding-bottom: 30px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 2.5px solid #3B82F6;
+        border-radius: 14px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 25px rgba(56, 189, 248, 0.15), 0 8px 32px rgba(0, 0, 0, 0.08);
+
+        &::before {
+            display: none;
+        }
+
+        clip-path: none;
+    }
+
+    .map-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(56, 189, 248, 0.2);
+
+        h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #7C3AED;
+            font-family: 'Patrick Hand', cursive, sans-serif;
+        }
+
+        .close-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            opacity: 0.7;
+
+            svg {
+                width: 18px;
+                height: 18px;
+                fill: none;
+                stroke: #7C3AED;
+                stroke-width: 2.5;
+                stroke-linecap: round;
+            }
+
+            &:hover {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+    }
+
+    .map-container {
+        position: relative;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .map-image {
+        display: block;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+        // Brak filtra — linie dopasowane bezpośrednio w obrazie map.webp
+    }
+
+    .painted-map-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    // === HOVER ZONES — 4 quadrants ===
+    .map-hover-zone {
+        position: absolute;
+        z-index: 2;
+        cursor: pointer;
+        // Reset button defaults (these are now <button> for accessibility)
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: 0;
+        outline: none;
+        appearance: none;
+        font: inherit;
+        color: inherit;
+    }
+
+    .zone-about {
+        top: 0;
+        left: 0;
+        width: 30%;
+        height: 35%;
+        //background: rgba(0, 200, 100, 0.25); // DEBUG green
+        margin-top: 20%;
+        margin-left: 10%;
+    }
+
+    .zone-gallery {
+        bottom: 0;
+        left: 0;
+        width: 30%;
+        height: 35%;
+        //background: rgba(50, 100, 255, 0.25); // DEBUG blue
+        margin-bottom: 8%;
+        margin-left: 10%;
+    }
+
+    .zone-contact {
+        top: 0;
+        right: 0;
+        width: 35%;
+        height: 25%;
+        //background: rgba(255, 50, 50, 0.25); // DEBUG red
+        margin-top: 10%;
+        margin-right: 5%;
+    }
+
+    .zone-studio {
+        bottom: 0;
+        right: 0;
+        width: 25%;
+        height: 40%;
+        //background: rgba(255, 165, 0, 0.25); // DEBUG orange
+        margin-bottom: 19%;
+        margin-right: 15%;
+    }
+
+    .map-room-label {
+        position: absolute;
+        font-family: 'Cabin Sketch', cursive, sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1E3A8A;
+        pointer-events: none;
+        z-index: 4;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        text-shadow:
+            -1px -1px 0 #fff,
+            1px -1px 0 #fff,
+            -1px 1px 0 #fff,
+            1px 1px 0 #fff;
+
+        &.about {
+            top: 28%;
+            left: 26%;
+        }
+
+        &.gallery {
+            top: 94%;
+            left: 26%;
+        }
+
+        &.contact {
+            top: 14%;
+            left: 76%;
+        }
+
+        &.studio {
+            top: 75%;
+            left: 72%;
+        }
+    }
+
+    .pin-slot {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        width: 35px;
+        height: 35px;
+        padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        z-index: 2;
+
+        .slot-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        &:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+        }
+
+        &.active {
+            filter: drop-shadow(0 0 4px rgba(200, 50, 50, 0.5));
+        }
+    }
+
+    .pin-marker {
+        position: absolute;
+        transform: translate(-50%, -90%);
+        width: 20px;
+        height: auto;
+        z-index: 3;
+        pointer-events: none;
+        transition: left 0.4s ease, top 0.4s ease;
+
+        .pin-image {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+        }
+    }
+}
+
+// === AUDIO PANEL ===
+.audio-panel {
+    position: fixed;
+    top: 0;
+    right: 24px;
+    width: 220px;
+    filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.15));
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    z-index: 95;
+
+    &.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    // The card body — light glass neon
+    .audio-card {
+        position: relative;
+        width: 100%;
+        padding: 18px 16px 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 2.5px solid #3B82F6;
+        border-radius: 14px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(124, 58, 237, 0.15);
+        overflow: hidden;
+
+        &::before {
+            display: none;
+        }
+
+        &::after {
+            display: none;
+        }
+
+        clip-path: none;
+    }
+
+    .audio-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid rgba(56, 189, 248, 0.15);
+        position: relative;
+        z-index: 1;
+
+        h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #7C3AED;
+            font-family: 'Patrick Hand', cursive, sans-serif;
+        }
+
+        .close-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: transform 0.2s, opacity 0.2s;
+
+            svg {
+                width: 14px;
+                height: 14px;
+                stroke: #7C3AED;
+                stroke-width: 2.5;
+                fill: none;
+                stroke-linecap: round;
+            }
+
+            &:hover {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+    }
+
+    .audio-sliders-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        position: relative;
+        z-index: 1;
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            .slider-label {
+                display: flex;
+                justify-content: space-between;
+                font-family: 'Patrick Hand', cursive, sans-serif;
+                font-size: 14px;
+                color: #1E3A8A;
+                font-weight: 600;
+            }
+
+            .paper-slider {
+                appearance: none;
+                width: 100%;
+                height: 4px;
+                background: #e0e0e0;
+                border-radius: 2px;
+                outline: none;
+                cursor: pointer;
+
+                &::-webkit-slider-thumb {
+                    appearance: none;
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #38BDF8, #A78BFA);
+                    cursor: pointer;
+                    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+                }
+
+                &::-moz-range-thumb {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #38BDF8, #A78BFA);
+                    cursor: pointer;
+                    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+                    border: none;
+                }
+            }
+        }
+    }
+}
+
+// === MENU OVERLAY ===
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: -1;
+}
+
+// === SHARED HINT ANIMATION ===
+@keyframes hintFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+// === ENTRANCE HINT - Before entering ===
+.entrance-hint {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2.5px solid #3B82F6;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.15), 0 4px 16px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(8px);
+    font-size: 14px;
+    color: #1E3A8A;
+    pointer-events: auto;
+    animation: hintFadeIn 0.5s ease-out;
+
+    span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+// === CORRIDOR HINT - After entering ===
+.corridor-hint {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2.5px solid #3B82F6;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.15), 0 4px 16px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(8px);
+    font-size: 14px;
+    color: #1E3A8A;
+    pointer-events: auto;
+    animation: corridorHintFadeIn 0.5s ease-out, corridorHintFadeOut 0.5s ease-out 3.5s forwards;
+
+    span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    @keyframes corridorHintFadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+
+    @keyframes corridorHintFadeOut {
+        to {
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
+        }
+    }
+}
+
+// === GENRE SELECTOR (inside audio panel) ===
+.genre-selector {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.12);
+
+    .genre-selector-label {
+        font-family: 'Patrick Hand', cursive, sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #7C3AED;
+        margin-bottom: 10px;
+    }
+
+    .genre-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .genre-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        background: rgba(248, 250, 255, 0.6);
+        border: 2px solid transparent;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-align: left;
+        width: 100%;
+        font: inherit;
+        color: inherit;
+
+        &:hover {
+            background: rgba(219, 234, 254, 0.6);
+            transform: translateX(3px);
+        }
+
+        &.active {
+            background: linear-gradient(
+                135deg,
+                rgba(56, 189, 248, 0.1),
+                rgba(167, 139, 250, 0.12)
+            );
+        }
+    }
+
+    .genre-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .genre-info {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .genre-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1E3A8A;
+    }
+
+    .genre-desc {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        color: #6B7280;
+        margin-top: 1px;
+    }
+
+    .genre-playing {
+        color: #7C3AED;
+        font-size: 10px;
+        flex-shrink: 0;
+        animation: genreBounce 1s ease infinite;
+    }
+
+    @keyframes genreBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-2px); }
+    }
+}
+
+.audio-now-playing {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #6B7280;
+    text-align: center;
+
+    strong {
+        color: #7C3AED;
+    }
+}
+
+// Widen the audio panel to fit genre list
+.audio-panel {
+    width: 260px;
+}
+
+// === RESPONSIVE ===
+@media (max-width: 768px) {
+    .nav-btn {
+        width: 45px;
+        height: 50px;
+    }
+
+    .back-btn {
+        left: 16px;
+    }
+
+    .nav-controls {
+        right: 16px;
+        gap: 8px;
+    }
+
+    .audio-panel {
+        right: 16px;
+    }
+
+    .map-panel {
+        width: 95%;
+        max-width: none;
+
+        .map-header h3 {
+            font-size: 14px;
+        }
+
+        .close-btn {
+            width: 28px;
+            height: 28px;
+        }
+    }
+
+    .entrance-hint {
+        gap: 8px;
+        bottom: 24px;
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+
+    .corridor-hint {
+        gap: 8px;
+        bottom: 24px;
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .map-panel {
+        width: 100%;
+    }
+}
