@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-venv/
-.venv/
-leads.db
-.env
-*.pyc
-.DS_Store
-*.db
