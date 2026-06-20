@@ -19,7 +19,7 @@ export const MUSIC_GENRES = [
         description: '2026 trending beats',
         color: '#A78BFA',
         useLocalTrack: false,
-        ytIds: ['NsXSB-OP-AE']
+        ytIds: ['bHqGOcZX7-o']
     },
     {
         id: 'lofi',
