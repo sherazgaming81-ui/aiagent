@@ -31,11 +31,11 @@ export const MUSIC_GENRES = [
     },
     {
         id: 'cyberpunk',
-        name: 'Cyberpunk',
-        description: 'Electronic future',
+        name: 'Electric Guitar',
+        description: 'Electric phonk songs',
         color: '#06B6D4',
         useLocalTrack: false,
-        ytIds: ['lFOCl1K5-IM', 'H8sK16EWIj4']
+        ytIds: ['kEM9taB4LRo', 'GGmMCTN5bSc']
     },
     {
         id: 'off',
