@@ -9,9 +9,9 @@ export const MUSIC_GENRES = [
         name: 'Ambient',
         description: 'Chill atmospheric',
         color: '#38BDF8',
-        useLocalTrack: true,
+        useLocalTrack: false,
         localSrc: '/sounds/cfl_turningpages-belem-breeze-487596.ogg',
-        ytIds: ['5qap5aO4i9A']
+        ytIds: ['Vqe0kDQ06H8']
     },
     {
         id: 'phonk',
