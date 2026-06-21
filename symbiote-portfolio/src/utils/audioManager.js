@@ -32,10 +32,10 @@ export const MUSIC_GENRES = [
     {
         id: 'cyberpunk',
         name: 'Electric Guitar',
-        description: 'Electric phonk songs',
+        description: 'Metal phonk songs',
         color: '#06B6D4',
         useLocalTrack: false,
-        ytIds: ['kEM9taB4LRo', 'GGmMCTN5bSc']
+        ytIds: ['47gPTT53Eu8']
     },
     {
         id: 'off',
